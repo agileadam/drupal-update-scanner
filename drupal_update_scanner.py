@@ -30,6 +30,12 @@ def runBash(cmd):
 
 TEMPFILE = '/tmp/allupdates.txt'
 
+# Clean up the paths to fix any problems we might
+# have with user paths (--dir=~/xyz won't work otherwise)
+args.scandir = os.path.expanduser(args.scandir)
+if args.filename:
+    args.filename = os.path.expanduser(args.filename)
+
 # We need to write to a temp file if -m OR -f are used!
 if args.mailaddresses or args.filename:
     if os.path.exists(TEMPFILE): 
