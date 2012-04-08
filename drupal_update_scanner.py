@@ -12,7 +12,7 @@ parser.add_argument("-d", "--dir", dest="scandir", required=True,
                   help="which directory contains your drupal sites (you can optionally \
                   traverse deeper from this root directory using the -t/--traverse argument)",
                   metavar="SCAN_DIRECTORY")
-parser.add_argument("-f", "--file", dest="filename",
+parser.add_argument("-o", "--output-file", dest="outputfile",
                   help="write report to specific FILE", metavar="FILE")
 parser.add_argument("-t", "--traverse", dest="traverse", default=0, type=int,
                   help="how many levels deep to scan for drupal sites", metavar="N")
@@ -29,8 +29,8 @@ args = parser.parse_args()
 
 # Exit as early as possible; if output file
 # already exists, exit with message
-if args.filename:
-    if os.path.exists(args.filename):
+if args.outputfile:
+    if os.path.exists(args.outputfile):
         sys.exit("The file specified already exists!")
 
 # Execute a bash command and return the stdout
@@ -56,7 +56,7 @@ def processDir(dir):
     if results:
         if args.verbose:
             print results
-        if args.mailaddresses or args.filename:
+        if args.mailaddresses or args.outputfile:
             f.write("###################################\n")
             f.write(dir + "\n " + results.replace("\r\n", "\n") + "\n\n")
     else:
@@ -69,11 +69,11 @@ TEMPFILE = '/tmp/allupdates.txt'
 # Clean up the paths to fix any problems we might
 # have with user paths (--dir=~/xyz won't work otherwise)
 args.scandir = os.path.expanduser(args.scandir)
-if args.filename:
-    args.filename = os.path.expanduser(args.filename)
+if args.outputfile:
+    args.outputfile = os.path.expanduser(args.outputfile)
 
 # We need to write to a temp file if -m OR -f are used!
-if args.mailaddresses or args.filename:
+if args.mailaddresses or args.outputfile:
     if os.path.exists(TEMPFILE): 
         os.remove(TEMPFILE)
     f = open(TEMPFILE, 'w')
@@ -95,7 +95,7 @@ while (count <= args.traverse):
     for name in glob.glob(wildcards + 'sites/all/modules'):
         processDir(name.replace('/sites/all/modules', ''))
 
-if args.mailaddresses or args.filename:
+if args.mailaddresses or args.outputfile:
     f.close()
 
 # Move back to where the user started
@@ -117,8 +117,8 @@ if args.mailaddresses:
     s.sendmail('adam@transitid.com', [args.mailaddresses], msg.as_string())
     s.quit()
 
-if args.filename:
-    os.system("mv %s %s" % (TEMPFILE, args.filename))
+if args.outputfile:
+    os.system("mv %s %s" % (TEMPFILE, args.outputfile))
 
 # Just in case the user doesn't want this hanging around
 if os.path.exists(TEMPFILE): 
