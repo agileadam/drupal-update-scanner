@@ -9,9 +9,13 @@ import glob
 
 parser = argparse.ArgumentParser(description='Scan for Drupal updates.')
 parser.add_argument("-d", "--dir", dest="scandir", required=True,
-                  help="which directory contains your drupal directories?", metavar="SCAN_DIRECTORY")
+                  help="which directory contains your drupal sites (you can optionally \
+                  traverse deeper from this root directory using the -t/--traverse argument)",
+                  metavar="SCAN_DIRECTORY")
 parser.add_argument("-f", "--file", dest="filename",
                   help="write report to specific FILE", metavar="FILE")
+parser.add_argument("-t", "--traverse", dest="traverse", default=0, type=int,
+                  help="how many levels deep to scan for drupal sites", metavar="N")
 parser.add_argument("-m", "--mail", dest="mailaddresses",
                   help="send report to email address or addresses \
                   e.g., --mail \"foo@foo.com,bar@bar.com\"", metavar="ADDRESSES")
@@ -41,7 +45,6 @@ def processDir(dir):
     os.chdir(dir)
     if args.verbose:
         print dir
-
     drush = subprocess.Popen(['drush', 'pm-update', '--simulate'],
                              stdout=subprocess.PIPE,
                              )
@@ -49,9 +52,7 @@ def processDir(dir):
                              stdin=drush.stdout,
                              stdout=subprocess.PIPE,
                              )
-
     results = grep.stdout.read()
-
     if results:
         if args.verbose:
             print results
@@ -86,11 +87,13 @@ os.chdir(args.scandir)
 
 root, dirs, files = os.walk('.').next()
 
-for name in glob.glob('*/sites/all/modules'):
-    processDir(name.replace('/sites/all/modules', ''))
-
-for name in glob.glob('*/*/sites/all/modules'):
-    processDir(name.replace('/sites/all/modules', ''))
+# Traverse into subdirectories until the --traverse depth is reached
+count = 0
+while (count <= args.traverse):
+    count = count + 1
+    wildcards = '*/' * count
+    for name in glob.glob(wildcards + 'sites/all/modules'):
+        processDir(name.replace('/sites/all/modules', ''))
 
 if args.mailaddresses or args.filename:
     f.close()
