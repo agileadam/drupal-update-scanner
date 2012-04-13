@@ -44,15 +44,12 @@ def runBash(cmd):
 def processDir(dir):
     os.chdir(dir)
     if args.verbose:
-        print dir
-    drush = subprocess.Popen(['drush', 'pm-update', '--simulate'],
+        print "###################################\n" + dir
+    drush = subprocess.Popen(['drush', 'pm-update', '--pipe', '--simulate',
+                             '--security-only'],
                              stdout=subprocess.PIPE,
                              )
-    grep = subprocess.Popen(['grep', '"UPDATE\|not supported"'],
-                             stdin=drush.stdout,
-                             stdout=subprocess.PIPE,
-                             )
-    results = grep.stdout.read()
+    results = drush.stdout.read()
     if results:
         if args.verbose:
             print results
@@ -61,7 +58,7 @@ def processDir(dir):
             f.write(dir + "\n " + results.replace("\r\n", "\n") + "\n\n")
     else:
         if args.verbose:
-            print "No updates found"
+            print "No updates found\n\n"
     os.chdir(args.scandir)
 
 TEMPFILE = '/tmp/allupdates.txt'
