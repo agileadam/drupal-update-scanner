@@ -55,7 +55,7 @@ def processDir(dir):
             print results
         if args.mailaddresses or args.outputfile:
             f.write("###################################\n")
-            f.write(dir + "\n " + results.replace("\r\n", "\n") + "\n\n")
+            f.write(dir + "\n " + results.replace("\r\n", "\n"))
     else:
         if args.verbose:
             print "No updates found\n\n"
