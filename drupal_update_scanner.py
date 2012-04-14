@@ -102,8 +102,6 @@ origdir = os.getcwd()
 # Move to the directory that contains the Drupal sites
 os.chdir(args.scandir)
 
-root, dirs, files = os.walk('.').next()
-
 # Traverse into subdirectories until the --traverse depth is reached
 count = 0
 while (count <= args.traverse):
@@ -118,9 +116,10 @@ if args.outputfile:
 # Move back to where the user started
 os.chdir(origdir)
 
+# Create the final file (move it from its temporary directory)
 if args.outputfile:
     os.system("mv %s %s" % (TEMPFILE, args.outputfile))
 
 # Just in case the user doesn't want this hanging around
-if os.path.exists(TEMPFILE): 
+if os.path.exists(TEMPFILE):
     os.remove(TEMPFILE)
