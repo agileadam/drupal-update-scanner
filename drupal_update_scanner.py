@@ -2,8 +2,6 @@
 import sys
 import os
 import subprocess
-import smtplib
-from email.mime.text import MIMEText
 import argparse
 import glob
 
@@ -16,12 +14,6 @@ parser.add_argument("-o", "--output-file", dest="outputfile",
                   help="write report to specific FILE", metavar="FILE")
 parser.add_argument("-t", "--traverse", dest="traverse", default=0, type=int,
                   help="how many levels deep to scan for drupal sites", metavar="N")
-parser.add_argument("-m", "--mail", dest="mailaddresses",
-                  help="send report to email address or addresses \
-                  e.g., --mail \"foo@foo.com,bar@bar.com\"", metavar="ADDRESSES")
-parser.add_argument("-s", "--subject", dest="mailsubject", default="UPDATE REPORT",
-                  help="set email subject e.g., --subject=\"Update Alert!\"",
-                  metavar="\"SUBJECT\"")
 parser.add_argument("-q", "--quiet",
                   action="store_false", dest="verbose", default=True,
                   help="do not show output")
@@ -78,7 +70,7 @@ def processDir(dir):
     if results:
         if args.verbose:
             print results
-        if args.mailaddresses or args.outputfile:
+        if args.outputfile:
             f.write("###################################\n")
             f.write(dir + "\n " + results.replace("\r\n", "\n"))
     else:
@@ -95,8 +87,8 @@ if args.outputfile:
     args.outputfile = os.path.expanduser(args.outputfile)
 
 # We need to write to a temp file if -m OR -f are used!
-if args.mailaddresses or args.outputfile:
-    if os.path.exists(TEMPFILE): 
+if args.outputfile:
+    if os.path.exists(TEMPFILE):
         os.remove(TEMPFILE)
     f = open(TEMPFILE, 'w')
 
@@ -117,27 +109,11 @@ while (count <= args.traverse):
     for name in glob.glob(wildcards + 'sites/all/modules'):
         processDir(name.replace('/sites/all/modules', ''))
 
-if args.mailaddresses or args.outputfile:
+if args.outputfile:
     f.close()
 
 # Move back to where the user started
 os.chdir(origdir)
-
-if args.mailaddresses:
-    print "Sending email to %s" % args.mailaddresses
-
-    f = open(TEMPFILE, 'rb')
-    msg = MIMEText(f.read(), 'plain')
-    f.close()
-
-    msg['Subject'] = args.mailsubject
-    msg['From'] = 'adam@transitid.com'
-    msg['To'] = args.mailaddresses
-
-    # This requires that a local SMTP server is running (e.g., postfix)
-    s = smtplib.SMTP('localhost')
-    s.sendmail('adam@transitid.com', [args.mailaddresses], msg.as_string())
-    s.quit()
 
 if args.outputfile:
     os.system("mv %s %s" % (TEMPFILE, args.outputfile))
