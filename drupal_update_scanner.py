@@ -39,13 +39,38 @@ def runBash(cmd):
     out = p.stdout.read().strip()
     return out
 
+# Emulate the which binary
+# http://stackoverflow.com/a/377028
+def which(program):
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+# Look for Drush and store its location; quit if we cannot find it
+drush_app = which('drush')
+if drush_app == None:
+    sys.exit("Couldn't not find the Drush application in $PATH. If you are \
+running this from a cronjob, try setting cron's PATH to include the drush \
+application.")
+
 # Process a Drupal directory (dir MUST be a Drupal directory
 # as we're not checking this here!)
 def processDir(dir):
     os.chdir(dir)
     if args.verbose:
         print "###################################\n" + dir
-    drush = subprocess.Popen(['drush', 'pm-update', '--pipe', '--simulate',
+    drush = subprocess.Popen([drush_app, 'pm-update', '--pipe', '--simulate',
                              '--security-only'],
                              stdout=subprocess.PIPE,
                              )
