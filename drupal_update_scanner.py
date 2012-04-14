@@ -10,6 +10,9 @@ parser.add_argument("-d", "--dir", dest="scandir", required=True,
                   help="which directory contains your drupal sites (you can optionally \
                   traverse deeper from this root directory using the -t/--traverse argument)",
                   metavar="SCAN_DIRECTORY")
+parser.add_argument("-a", "--report-all", default=False, dest="reportall",
+                  action="store_true", help="include all Drupal sites in the output, \
+                  regardless of update status")
 parser.add_argument("-o", "--output-file", dest="outputfile",
                   help="write report to specific FILE", metavar="FILE")
 parser.add_argument("-t", "--traverse", dest="traverse", default=0, type=int,
@@ -60,8 +63,6 @@ application.")
 # as we're not checking this here!)
 def processDir(dir):
     os.chdir(dir)
-    if args.verbose:
-        print "###################################\n" + dir
     drush = subprocess.Popen([drush_app, 'pm-update', '--pipe', '--simulate',
                              '--security-only'],
                              stdout=subprocess.PIPE,
@@ -69,12 +70,14 @@ def processDir(dir):
     results = drush.stdout.read()
     if results:
         if args.verbose:
+            print "###################################\n" + dir
             print results
         if args.outputfile:
             f.write("###################################\n")
             f.write(dir + "\n " + results.replace("\r\n", "\n"))
     else:
-        if args.verbose:
+        if args.verbose and args.reportall:
+            print "###################################\n" + dir
             print "No updates found\n\n"
     os.chdir(args.scandir)
 
