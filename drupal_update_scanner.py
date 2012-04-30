@@ -33,12 +33,6 @@ if args.outputfile:
     if os.path.exists(args.outputfile):
         sys.exit("The file specified already exists!")
 
-# Execute a bash command and return the stdout
-def runBash(cmd):
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    out = p.stdout.read().strip()
-    return out
-
 # Emulate the which binary
 # http://stackoverflow.com/a/377028
 def which(program):
