@@ -19,5 +19,5 @@ Here's an example cronjob (all on a single line):
 * The Drupal sites are located up to one level below /webapps/
 (e.g., _/webapps/*/httpdocs_)
 
-<code>15  2   *   *   *   /usr/local/bin/python2.7 /usr/local/bin/drupal_update_scanner.py</code>
+<code>15  2   *   *   *   /usr/local/bin/python2.7 /usr/local/bin/drupal-update-scanner.py</code>
 <code>-d /webapps/ -t 1 | mail -s "Drupal updates for server123" agileadam@gmail.com</code>
