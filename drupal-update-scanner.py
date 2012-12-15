@@ -57,10 +57,10 @@ application.")
 # as we're not checking this here!)
 def processDir(dir):
     os.chdir(dir)
-    drush = subprocess.Popen([drush_app, 'pm-update', '--pipe', '--simulate',
-                             '--security-only'],
-                             stdout=subprocess.PIPE,
-                             )
+    app = [drush_app, 'pm-update', '--pipe', '--simulate']
+    if args.reportall is False:
+        app.append('--security-only')
+    drush = subprocess.Popen(app, stdout=subprocess.PIPE)
     results = drush.stdout.read()
     if results:
         if args.verbose:
