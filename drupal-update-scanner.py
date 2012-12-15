@@ -70,9 +70,12 @@ def processDir(dir):
             f.write("###################################\n")
             f.write(dir + "\n " + results.replace("\r\n", "\n"))
     else:
-        if args.verbose and args.reportall:
+        if args.verbose:
             print "###################################\n" + dir
-            print "No updates found\n\n"
+            if args.reportall:
+                print "No updates found\n\n"
+            else:
+                print "No security updates found\n\n"
     os.chdir(args.scandir)
 
 TEMPFILE = '/tmp/allupdates.txt'
