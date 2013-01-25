@@ -61,21 +61,27 @@ def processDir(dir):
     if args.reportall is False:
         app.append('--security-only')
     drush = subprocess.Popen(app, stdout=subprocess.PIPE)
-    results = drush.stdout.read()
+
+    results = ""
+    for line in drush.stdout:
+        results = results + dir + ", " + line
+
     if results:
         if args.verbose:
-            print "###################################\n" + dir
             print results
         if args.outputfile:
-            f.write("###################################\n")
-            f.write(dir + "\n " + results.replace("\r\n", "\n"))
+            f.write(results)
     else:
         if args.verbose:
-            print "###################################\n" + dir
             if args.reportall:
-                print "No updates found\n\n"
+                print dir + ", No updates found\n"
             else:
-                print "No security updates found\n\n"
+                print dir + ", No security updates found\n"
+        if args.outputfile:
+            if args.reportall:
+                f.write(dir + ", No updates found\n")
+            else:
+                f.write(dir + ", No security updates found\n")
     os.chdir(args.scandir)
 
 TEMPFILE = '/tmp/allupdates.txt'
